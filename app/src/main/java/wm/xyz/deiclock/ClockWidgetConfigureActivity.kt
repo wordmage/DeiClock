@@ -23,12 +23,16 @@ class ClockWidgetConfigureActivity : Activity() {
     private lateinit var timeZoneLeftSpinner: Spinner
     private lateinit var timeZoneRightSpinner: Spinner
     private lateinit var joinerEditText: TextInputEditText
+    private lateinit var messageEditText: TextInputEditText
     private var onClickListener = View.OnClickListener {
         val context = this@ClockWidgetConfigureActivity
 
         // Store the relevant preferences to show to the user later.
         stripHtml(joinerEditText.text.toString())?.let { string ->
             saveStringPref(context, appWidgetId, "joiner", string)
+        }
+        stripHtml(messageEditText.text.toString())?.let { string ->
+            saveStringPref(context, appWidgetId, "message", string)
         }
         saveTimeZonePref(context, appWidgetId, timeZoneLeftSpinner, 0)
         saveTimeZonePref(context, appWidgetId, timeZoneRightSpinner, 1)
@@ -58,6 +62,7 @@ class ClockWidgetConfigureActivity : Activity() {
         timeZoneLeftSpinner = binding.spinnerTimezonesLeft
         timeZoneRightSpinner = binding.spinnerTimezonesRight
         joinerEditText = binding.textInputJoiner
+        messageEditText = binding.textInputMessage
 
         binding.addButton.setOnClickListener(onClickListener)
 

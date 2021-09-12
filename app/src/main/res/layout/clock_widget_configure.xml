@@ -49,6 +49,13 @@
         android:hint="Joiner"
         app:layout_constraintTop_toBottomOf="@id/label_timezones_right" />
 
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/text_input_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Personal Message"
+        app:layout_constraintTop_toBottomOf="@id/text_input_joiner" />
+
     <Button
         android:id="@+id/add_button"
         android:layout_width="wrap_content"
@@ -57,6 +64,6 @@
         android:text="@string/add_widget"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_input_joiner" />
+        app:layout_constraintTop_toBottomOf="@id/text_input_message" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
