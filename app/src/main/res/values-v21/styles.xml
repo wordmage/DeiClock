@@ -9,4 +9,11 @@
         <item name="android:padding">?attr/appWidgetPadding</item>
         <item name="android:background">@drawable/app_widget_inner_view_background</item>
     </style>
+
+    <style name="ConfigurationTheme" parent="Theme.DeiClock">
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="android:windowBackground">#1000</item>
+    </style>
 </resources>

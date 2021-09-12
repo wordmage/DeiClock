@@ -10,6 +10,8 @@ import android.text.Html
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.TextClock
+import android.widget.TextView
 import com.google.android.material.textfield.TextInputEditText
 import wm.xyz.deiclock.databinding.ClockWidgetConfigureBinding
 import java.util.*
@@ -24,7 +26,11 @@ class ClockWidgetConfigureActivity : Activity() {
     private lateinit var timeZoneRightSpinner: Spinner
     private lateinit var joinerEditText: TextInputEditText
     private lateinit var messageEditText: TextInputEditText
-    private var onClickListener = View.OnClickListener {
+    private lateinit var fakeClockLeft: TextClock
+    private lateinit var fakeClockRight: TextClock
+    private lateinit var fakeJoiner: TextView
+    private lateinit var fakeMessage: TextView
+    private var saveOnClickListener = View.OnClickListener {
         val context = this@ClockWidgetConfigureActivity
 
         // Store the relevant preferences to show to the user later.
@@ -47,6 +53,17 @@ class ClockWidgetConfigureActivity : Activity() {
         setResult(RESULT_OK, resultValue)
         finish()
     }
+    private var previewOnClickListener = View.OnClickListener {
+        // Display and preview user customisation into the fake widgets.
+        stripHtml(joinerEditText.text.toString())?.let { string ->
+            fakeJoiner.text = string
+        }
+        stripHtml(messageEditText.text.toString())?.let { string ->
+            fakeMessage.text = string
+        }
+        fakeClockLeft.timeZone = timeZoneLeftSpinner.selectedItem.toString()
+        fakeClockRight.timeZone = timeZoneRightSpinner.selectedItem.toString()
+    }
     private lateinit var binding: ClockWidgetConfigureBinding
 
     public override fun onCreate(icicle: Bundle?) {
@@ -61,10 +78,15 @@ class ClockWidgetConfigureActivity : Activity() {
 
         timeZoneLeftSpinner = binding.spinnerTimezonesLeft
         timeZoneRightSpinner = binding.spinnerTimezonesRight
-        joinerEditText = binding.textInputJoiner
-        messageEditText = binding.textInputMessage
+        joinerEditText = binding.joinerEditText
+        messageEditText = binding.messageEditText
+        fakeClockLeft = binding.configurationClockLeft
+        fakeClockRight = binding.configurationClockRight
+        fakeJoiner = binding.configurationClockJoiner
+        fakeMessage = binding.configurationMessage
 
-        binding.addButton.setOnClickListener(onClickListener)
+        binding.addButton.setOnClickListener(saveOnClickListener)
+        binding.previewButton.setOnClickListener(previewOnClickListener)
 
         // Find the widget id from the intent.
         val intent = intent
