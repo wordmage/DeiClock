@@ -15,7 +15,7 @@
         android:shadowDy="0.0"
         android:shadowRadius="6"
         android:textAllCaps="true"
-        android:textSize="24sp" />
+        android:textSize="26sp" />
 
     <TextClock
         android:id="@+id/widget_right_clock"
@@ -28,6 +28,6 @@
         android:shadowDy="0.0"
         android:shadowRadius="6"
         android:textAllCaps="true"
-        android:textSize="24sp"
+        android:textSize="26sp"
         android:textStyle="bold" />
 </RelativeLayout>
