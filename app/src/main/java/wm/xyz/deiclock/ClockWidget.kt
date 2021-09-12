@@ -24,7 +24,7 @@ class ClockWidget : AppWidgetProvider() {
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {
         // When the user deletes the widget, delete the preference associated with it.
         for (appWidgetId in appWidgetIds) {
-            deleteTitlePref(context, appWidgetId)
+            clearPreference(context, appWidgetId)
         }
     }
 
@@ -42,13 +42,13 @@ internal fun updateAppWidget(
     appWidgetManager: AppWidgetManager,
     appWidgetId: Int
 ) {
-    val widgetText = loadTitlePref(context, appWidgetId)
+    val widgetTimeZoneLeft = loadTimeZonePref(context, appWidgetId, 0)
+    val widgetTimeZoneRight = loadTimeZonePref(context, appWidgetId, 1)
     // Construct the RemoteViews object
     val views = RemoteViews(context.packageName, R.layout.clock_widget)
 
-    //views.setTextViewText(R.id.appwidget_text, widgetText)
-
-    //views.setCharSequence(R.id.appwidget_text, "setFormat24Hour", "k:mm")
+    views.setString(R.id.widget_left_clock, "setTimeZone", widgetTimeZoneLeft)
+    views.setString(R.id.widget_right_clock, "setTimeZone", widgetTimeZoneRight)
 
     // Instruct the widget manager to update the widget
     appWidgetManager.updateAppWidget(appWidgetId, views)

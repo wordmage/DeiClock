@@ -6,21 +6,24 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.EditText
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import wm.xyz.deiclock.databinding.ClockWidgetConfigureBinding
+import java.util.*
 
 /**
  * The configuration screen for the [ClockWidget] AppWidget.
  */
 class ClockWidgetConfigureActivity : Activity() {
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
-    private lateinit var appWidgetText: EditText
+    private lateinit var timeZoneLeftSpinner: Spinner
+    private lateinit var timeZoneRightSpinner: Spinner
     private var onClickListener = View.OnClickListener {
         val context = this@ClockWidgetConfigureActivity
 
-        // When the button is clicked, store the string locally
-        val widgetText = appWidgetText.text.toString()
-        saveTitlePref(context, appWidgetId, widgetText)
+        // Store the relevant preferences to show to the user later.
+        saveTimeZonePref(context, appWidgetId, timeZoneLeftSpinner, 0)
+        saveTimeZonePref(context, appWidgetId, timeZoneRightSpinner, 1)
 
         // It is the responsibility of the configuration activity to update the app widget
         val appWidgetManager = AppWidgetManager.getInstance(context)
@@ -44,7 +47,8 @@ class ClockWidgetConfigureActivity : Activity() {
         binding = ClockWidgetConfigureBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        appWidgetText = binding.appwidgetText as EditText
+        timeZoneLeftSpinner = binding.spinnerTimezonesLeft
+        timeZoneRightSpinner = binding.spinnerTimezonesRight
         binding.addButton.setOnClickListener(onClickListener)
 
         // Find the widget id from the intent.
@@ -62,7 +66,8 @@ class ClockWidgetConfigureActivity : Activity() {
             return
         }
 
-        appWidgetText.setText(loadTitlePref(this@ClockWidgetConfigureActivity, appWidgetId))
+        populateTimeZoneSpinner(this, timeZoneRightSpinner)
+        populateTimeZoneSpinner(this, timeZoneLeftSpinner)
     }
 
 }
@@ -70,23 +75,56 @@ class ClockWidgetConfigureActivity : Activity() {
 private const val PREFS_NAME = "wm.xyz.deiclock.ClockWidget"
 private const val PREF_PREFIX_KEY = "appwidget_"
 
-// Write the prefix to the SharedPreferences object for this widget
-internal fun saveTitlePref(context: Context, appWidgetId: Int, text: String) {
+/**
+ * Saves the selected timezone from a spinner.
+ *
+ * @param context       The context of the call.
+ * @param appWidgetId   The ID of the widget; used in the prefix of the preference.
+ * @param spinner       The spinner selecting a valid list of timezones.
+ * @param clock         Whether this should be the left clock (0) or the right clock (>0)
+ */
+internal fun saveTimeZonePref(context: Context, appWidgetId: Int, spinner: Spinner, clock: Int) {
     val prefs = context.getSharedPreferences(PREFS_NAME, 0).edit()
-    prefs.putString(PREF_PREFIX_KEY + appWidgetId, text)
+    prefs.putString(
+        "${PREF_PREFIX_KEY}${appWidgetId}_${if (clock == 0) "left_tz" else "right_tz"}",
+        spinner.selectedItem.toString()
+    )
     prefs.apply()
 }
 
-// Read the prefix from the SharedPreferences object for this widget.
-// If there is no preference saved, get the default from a resource
-internal fun loadTitlePref(context: Context, appWidgetId: Int): String {
+/**
+ * Loads the relevant timezone preference for a specified clock.
+ *
+ * @param context       The context of the call.
+ * @param appWidgetId   The ID of the widget; used in the prefix of the preference.
+ * @param clock         Whether this should be the left clock (0) or the right clock (>0)
+ */
+internal fun loadTimeZonePref(context: Context, appWidgetId: Int, clock: Int): String {
     val prefs = context.getSharedPreferences(PREFS_NAME, 0)
-    val titleValue = prefs.getString(PREF_PREFIX_KEY + appWidgetId, null)
-    return titleValue ?: context.getString(R.string.appwidget_text)
+    val titleValue = prefs.getString(
+        "${PREF_PREFIX_KEY}${appWidgetId}_${if (clock == 0) "left_tz" else "right_tz"}",
+        null
+    )
+    return titleValue ?: context.getString(R.string.clock_default_tz)
 }
 
-internal fun deleteTitlePref(context: Context, appWidgetId: Int) {
-    val prefs = context.getSharedPreferences(PREFS_NAME, 0).edit()
-    prefs.remove(PREF_PREFIX_KEY + appWidgetId)
-    prefs.apply()
+// Removes all preferences related to the appWidgetId
+internal fun clearPreference(context: Context, appWidgetId: Int) {
+    val prefs = context.getSharedPreferences(PREFS_NAME, 0)
+    val prefEntries: Map<String, *> =
+        prefs.all.filterKeys { it.contains("${PREF_PREFIX_KEY}${appWidgetId}") }
+
+    prefEntries.forEach {
+        prefs.edit().remove(it.key).apply()
+    }
+}
+
+// Populates a spinner with available timezones, retrieved from the TimeZone class.
+internal fun populateTimeZoneSpinner(context: Context, spinner: Spinner) {
+    // TODO: Can we make this display a nicer list (i.e, similar to the system's clock app)?
+    val spinnerArrayAdapter: ArrayAdapter<String> = ArrayAdapter<String>(
+        context, android.R.layout.simple_spinner_item, TimeZone.getAvailableIDs()
+    )
+    spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+    spinner.adapter = spinnerArrayAdapter
 }
