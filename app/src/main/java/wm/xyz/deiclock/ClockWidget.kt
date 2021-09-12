@@ -44,9 +44,12 @@ internal fun updateAppWidget(
 ) {
     val widgetTimeZoneLeft = loadTimeZonePref(context, appWidgetId, 0)
     val widgetTimeZoneRight = loadTimeZonePref(context, appWidgetId, 1)
+    val joinerText = loadStringPref(context, appWidgetId, "joiner")
+
     // Construct the RemoteViews object
     val views = RemoteViews(context.packageName, R.layout.clock_widget)
 
+    views.setTextViewText(R.id.widget_clock_joiner, joinerText)
     views.setString(R.id.widget_left_clock, "setTimeZone", widgetTimeZoneLeft)
     views.setString(R.id.widget_right_clock, "setTimeZone", widgetTimeZoneRight)
 

@@ -4,12 +4,16 @@ import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.text.Html
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import com.google.android.material.textfield.TextInputEditText
 import wm.xyz.deiclock.databinding.ClockWidgetConfigureBinding
 import java.util.*
+
 
 /**
  * The configuration screen for the [ClockWidget] AppWidget.
@@ -18,10 +22,14 @@ class ClockWidgetConfigureActivity : Activity() {
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
     private lateinit var timeZoneLeftSpinner: Spinner
     private lateinit var timeZoneRightSpinner: Spinner
+    private lateinit var joinerEditText: TextInputEditText
     private var onClickListener = View.OnClickListener {
         val context = this@ClockWidgetConfigureActivity
 
         // Store the relevant preferences to show to the user later.
+        stripHtml(joinerEditText.text.toString())?.let { string ->
+            saveStringPref(context, appWidgetId, "joiner", string)
+        }
         saveTimeZonePref(context, appWidgetId, timeZoneLeftSpinner, 0)
         saveTimeZonePref(context, appWidgetId, timeZoneRightSpinner, 1)
 
@@ -49,6 +57,8 @@ class ClockWidgetConfigureActivity : Activity() {
 
         timeZoneLeftSpinner = binding.spinnerTimezonesLeft
         timeZoneRightSpinner = binding.spinnerTimezonesRight
+        joinerEditText = binding.textInputJoiner
+
         binding.addButton.setOnClickListener(onClickListener)
 
         // Find the widget id from the intent.
@@ -93,6 +103,34 @@ internal fun saveTimeZonePref(context: Context, appWidgetId: Int, spinner: Spinn
 }
 
 /**
+ * Saves a string object to a specified preference.
+ *
+ * @param context       The context of the call.
+ * @param appWidgetId   The ID of the widget; used in the prefix of the preference.
+ * @param pref_key      The preference key to save this string object to.
+ * @param content       The string object itself.
+ */
+internal fun saveStringPref(context: Context, appWidgetId: Int, pref_key: String, content: String) {
+    val prefs = context.getSharedPreferences(PREFS_NAME, 0).edit()
+    prefs.putString("${PREF_PREFIX_KEY}${appWidgetId}_${pref_key}", content)
+    prefs.apply()
+}
+
+/**
+ * Loads a specified string preference.
+ *
+ * @param context       The context of the call.
+ * @param appWidgetId   The ID of the widget; used in the prefix of the preference.
+ * @param pref_key      The preference key to load.
+ *
+ * @return String       The string from the stored preference, a blank string if otherwise.
+ */
+internal fun loadStringPref(context: Context, appWidgetId: Int, pref_key: String): String {
+    val prefs = context.getSharedPreferences(PREFS_NAME, 0)
+    return prefs.getString("${PREF_PREFIX_KEY}${appWidgetId}_${pref_key}", "") ?: ""
+}
+
+/**
  * Loads the relevant timezone preference for a specified clock.
  *
  * @param context       The context of the call.
@@ -127,4 +165,13 @@ internal fun populateTimeZoneSpinner(context: Context, spinner: Spinner) {
     )
     spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
     spinner.adapter = spinnerArrayAdapter
+}
+
+// Strips HTML tags from user inputs.
+private fun stripHtml(html: String?): String? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY).toString()
+    } else {
+        Html.fromHtml(html).toString()
+    }
 }

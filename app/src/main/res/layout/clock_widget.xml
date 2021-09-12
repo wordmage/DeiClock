@@ -18,6 +18,14 @@
         android:textAllCaps="true"
         android:textSize="26sp" />
 
+    <TextView
+        android:id="@+id/widget_clock_joiner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/widget_left_clock"
+        android:layout_centerInParent="true"
+        android:textSize="16sp" />
+
     <TextClock
         android:id="@+id/widget_right_clock"
         android:layout_width="wrap_content"
